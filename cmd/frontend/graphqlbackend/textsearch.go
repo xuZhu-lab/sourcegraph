@@ -33,7 +33,7 @@ import (
 	"github.com/sourcegraph/sourcegraph/pkg/gitserver"
 	"github.com/sourcegraph/sourcegraph/pkg/gituri"
 	"github.com/sourcegraph/sourcegraph/pkg/mutablelimiter"
-	searchbackend "github.com/sourcegraph/sourcegraph/pkg/search/backend"
+	searchbackend "github.com/sourcegraph/sourcegraph/cmd/frontend/internal/pkg/search/backend"
 	"github.com/sourcegraph/sourcegraph/pkg/symbols/protocol"
 	"github.com/sourcegraph/sourcegraph/pkg/trace"
 	"github.com/sourcegraph/sourcegraph/pkg/vcs/git"

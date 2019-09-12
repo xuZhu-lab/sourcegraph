@@ -30,7 +30,7 @@ import (
 	"github.com/sourcegraph/sourcegraph/pkg/endpoint"
 	"github.com/sourcegraph/sourcegraph/pkg/errcode"
 	"github.com/sourcegraph/sourcegraph/pkg/gitserver"
-	searchbackend "github.com/sourcegraph/sourcegraph/pkg/search/backend"
+	searchbackend "github.com/sourcegraph/sourcegraph/cmd/frontend/internal/pkg/search/backend"
 	"github.com/sourcegraph/sourcegraph/pkg/trace"
 	"github.com/sourcegraph/sourcegraph/pkg/vcs"
 	"github.com/sourcegraph/sourcegraph/pkg/vcs/git"

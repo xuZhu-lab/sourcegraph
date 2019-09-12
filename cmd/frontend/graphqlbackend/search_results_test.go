@@ -21,7 +21,7 @@ import (
 	"github.com/sourcegraph/sourcegraph/pkg/api"
 	"github.com/sourcegraph/sourcegraph/pkg/db/dbconn"
 	"github.com/sourcegraph/sourcegraph/pkg/db/dbtesting"
-	searchbackend "github.com/sourcegraph/sourcegraph/pkg/search/backend"
+	searchbackend "github.com/sourcegraph/sourcegraph/cmd/frontend/internal/pkg/search/backend"
 )
 
 func TestSearchResults(t *testing.T) {
