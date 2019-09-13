@@ -10,6 +10,9 @@ import (
 
 	"github.com/google/zoekt"
 	zoektquery "github.com/google/zoekt/query"
+	"github.com/sourcegraph/sourcegraph/cmd/frontend/internal/pkg/search"
+	"github.com/sourcegraph/sourcegraph/pkg/api"
+	"github.com/sourcegraph/sourcegraph/pkg/trace"
 )
 
 // Zoekt wraps a zoekt.Searcher.
@@ -39,6 +42,70 @@ func (c *Zoekt) Close() {
 
 func (c *Zoekt) String() string {
 	return fmt.Sprintf("zoekt(%v)", c.Client)
+}
+
+func (c *Zoekt) Search(ctx context.Context, args *search.Args) (*zoekt.SearchResult, error) {
+	if len(repos) == 0 {
+		return &zoekt.SearchResult{}, nil
+	}
+
+	// Tell zoekt which repos to search
+	repoSet := &zoektquery.RepoSet{Set: make(map[string]bool, len(repos))}
+	repoMap := make(map[api.RepoName]*search.RepositoryRevisions, len(repos))
+	for _, repoRev := range repos {
+		repoSet.Set[string(repoRev.Repo.Name)] = true
+		repoMap[api.RepoName(strings.ToLower(string(repoRev.Repo.Name)))] = repoRev
+	}
+
+	queryExceptRepos, err := queryToZoektQuery(query, isSymbol)
+	if err != nil {
+		return nil, false, nil, err
+	}
+	finalQuery := zoektquery.NewAnd(repoSet, queryExceptRepos)
+
+	tr, ctx := trace.New(ctx, "zoekt.Search", fmt.Sprintf("%d %+v", len(repoSet.Set), finalQuery.String()))
+	defer func() {
+		tr.SetError(err)
+		if len(fm) > 0 {
+			tr.LazyPrintf("%d file matches", len(fm))
+		}
+		tr.Finish()
+	}()
+
+	if useFullDeadline {
+		// If the user manually specified a timeout, allow zoekt to use all of the remaining timeout.
+		deadline, _ := ctx.Deadline()
+		searchOpts.MaxWallTime = time.Until(deadline)
+
+		// We don't want our context's deadline to cut off zoekt so that we can get the results
+		// found before the deadline.
+		//
+		// We'll create a new context that gets cancelled if the other context is cancelled for any
+		// reason other than the deadline being exceeded. This essentially means the deadline for the new context
+		// will be `deadline + time for zoekt to cancel + network latency`.
+		cNew, cancel := context.WithCancel(context.Background())
+		go func(cOld context.Context) {
+			<-cOld.Done()
+			// cancel the new context if the old one is done for some reason other than the deadline passing.
+			if cOld.Err() != context.DeadlineExceeded {
+				cancel()
+			}
+		}(ctx)
+		ctx = cNew
+		defer cancel()
+	}
+
+	// If the query has a `repohasfile` or `-repohasfile` flag, we want to construct a new reposet based
+	// on the values passed in to the flag.
+	newRepoSet, err := createNewRepoSetWithRepoHasFileInputs(ctx, query, searcher, *repoSet)
+	if err != nil {
+		return nil, false, nil, err
+	}
+	finalQuery = zoektquery.NewAnd(newRepoSet, queryExceptRepos)
+	tr.LazyPrintf("after repohasfile filters: nRepos=%d query=%v", len(newRepoSet.Set), finalQuery)
+
+	t0 := time.Now()
+	return c.Client.Search(ctx, finalQuery, &searchOpts)
 }
 
 // ListAll returns the response of List without any restrictions.
