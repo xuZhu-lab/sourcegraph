@@ -152,7 +152,7 @@ function gitserverExec(
     return logAndTraceCall(ctx, 'Executing git command', () =>
         instrument(metrics.gitserverDurationHistogram, metrics.gitserverErrorsCounter, async () => {
             // Perform request - this may fail with a 404 or 500
-            const resp = await got(new URL(`http://${gitserverUrl}/exec`).href, {
+            const resp = await got.post(new URL(`http://${gitserverUrl}/exec`).href, {
                 body: JSON.stringify({ repo: repository, args }),
             })
 
