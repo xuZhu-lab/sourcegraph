@@ -16,6 +16,8 @@ steps:
     VERSION: $BUILDKITE_BUILD_NUMBER
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
   label: ':docker:'
+  agents:
+    queue: testing
 
 - wait
 
@@ -26,9 +28,13 @@ steps:
   env:
     IMAGE: sourcegraph/server:e2e_$BUILDKITE_BUILD_NUMBER
   label: ':chromium:'
+  agents:
+    queue: testing
 
 - wait
 
 - command: docker image rm -f sourcegraph/server:e2e_$BUILDKITE_BUILD_NUMBER
   label: ':sparkles:'
   soft_fail: true
+  agents:
+    queue: testing
