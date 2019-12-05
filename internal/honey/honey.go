@@ -2,6 +2,8 @@
 // honeycomb based on environment variables.
 package honey
 
+// DONOTMERGE
+
 import (
 	"log"
 	"os"
