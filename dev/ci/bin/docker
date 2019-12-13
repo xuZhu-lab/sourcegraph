@@ -59,6 +59,7 @@ def main():
             print("ERROR: Failed to find cgroup on CI", file=sys.stderr)
             sys.exit(1)
         args = sys.argv[1:]
+    print("INFO: docker %s" % " ".join(args), file=sys.stderr)
     os.execvpe("docker", ["docker"] + args, env)
 
 
