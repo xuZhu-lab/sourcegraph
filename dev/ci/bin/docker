@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+import os
+import os.path
+import sys
+
+
+def get_memory_cgroup(data):
+    for line in data.splitlines():
+        if not line:
+            continue
+        hid, controllers, path = line.split(":", 2)
+        if "memory" in controllers.split(","):
+            return path
+
+
+def read_current_process_cgroups():
+    pid = os.getpid()
+    return open(f"/proc/{pid}/cgroups").read()
+
+
+def docker_env(env, script_path=None):
+    if script_path is None:
+        script_path = __file__
+
+    # Need to remove our own path from env so we find the correct docker
+    script_dir = os.path.dirname(os.path.abspath(script_path))
+    path = [p for p in os.get_exec_path(env) if os.path.abspath(p) != script_dir]
+
+    env = env.copy()
+    env["PATH"] = os.pathsep.join(path)
+    return env
+
+
+def docker_add_cgroup_parent(args, cgroup_parent):
+    # Find the subcommand
+    for i, arg in enumerate(args):
+        # Skip global flags
+        if arg.startswith("-"):
+            continue
+        # We only add the argument to run and build
+        if arg not in ("run", "build"):
+            break
+        return args[:i] + [arg, "--cgroup-parent", cgroup_parent] + args[i + 1 :]
+    return args
+
+
+def main():
+    # Update PATH so we don't include this script when looking for docker
+    # (preventing executing it again)
+    env = docker_env(os.environ.copy())
+    try:
+        # Extract the cgroup for this process to pass to docker
+        cgroup = get_memory_cgroup(read_current_process_cgroups())
+        # include --cgroup-parent in args
+        args = docker_add_cgroup_parent(sys.argv[1:], cgroup)
+    except FileNotFoundError:
+        if os.getenv("CI"):
+            print("ERROR: Failed to find cgroup on CI", file=sys.stderr)
+            sys.exit(1)
+        args = sys.argv[1:]
+    os.execvpe("docker", ["docker"] + args, env)
+
+
+if __name__ == "__main__":
+    main()
