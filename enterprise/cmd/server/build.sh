@@ -6,6 +6,6 @@ set -ex
 
 export SERVER_PKG=${SERVER_PKG:-github.com/sourcegraph/sourcegraph/enterprise/cmd/server}
 
-env
+export PATH="$PWD/dev/ci/bin:$PATH"
 
 ./cmd/server/build.sh github.com/sourcegraph/sourcegraph/enterprise/cmd/frontend github.com/sourcegraph/sourcegraph/enterprise/cmd/management-console github.com/sourcegraph/sourcegraph/enterprise/cmd/repo-updater

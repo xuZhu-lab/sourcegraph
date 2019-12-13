@@ -2,7 +2,6 @@ env:
   ENTERPRISE: "1"
   FORCE_COLOR: "1"
   GO111MODULE: "on"
-  PATH: $PWD/dev/ci/bin:$PATH
 
 steps:
 - command:

@@ -8,6 +8,8 @@ if [ -z "$IMAGE" ]; then
     exit 1
 fi
 
+export PATH="$PWD/dev/ci/bin:$PATH"
+
 URL="http://localhost:7080"
 
 if curl --output /dev/null --silent --head --fail $URL; then
