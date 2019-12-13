@@ -1,7 +1,5 @@
 env:
   ENTERPRISE: "1"
-  DOCKER_BUILDKIT: "1"
-  ENTERPRISE: "1"
   FORCE_COLOR: "1"
   GO111MODULE: "on"
   PATH: $PWD/dev/ci/bin:$PATH
