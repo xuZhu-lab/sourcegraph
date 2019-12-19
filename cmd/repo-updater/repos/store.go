@@ -675,10 +675,13 @@ ORDER BY batch.ordinality
 `
 
 var deleteReposQuery = batchReposQueryFmtstr + `
-DELETE FROM repo USING batch
+UPDATE repo
+SET
+  name = 'DELETED-' || extract(epoch from transaction_timestamp()) || '-' || batch.name,
+  deleted_at = batch.deleted_at
+FROM batch
 WHERE batch.deleted_at IS NOT NULL
 AND repo.id = batch.ID
-RETURNING repo.*
 `
 
 var insertReposQuery = batchReposQueryFmtstr + `,
@@ -717,6 +720,27 @@ inserted AS (
     sources,
     metadata
   FROM batch
+  ON CONFLICT (external_id)
+  DO UPDATE SET 
+    name                  = batch.name,
+    uri                   = batch.uri,
+    description           = batch.description,
+    language              = batch.language,
+    created_at            = COALESCE(batch.created_at, repo.created_at),
+    updated_at            = COALESCE(batch.updated_at, repo.updated_at),
+    deleted_at            = batch.deleted_at,
+    external_service_type = COALESCE(NULLIF(BTRIM(batch.external_service_type), ''), repo.external_service_type),
+    external_service_id   = COALESCE(NULLIF(BTRIM(batch.external_service_id), ''), repo.external_service_id),
+    external_id           = COALESCE(NULLIF(BTRIM(batch.external_id), ''), repo.external_id),
+    enabled               = batch.enabled,
+    archived              = batch.archived,
+    fork                  = batch.fork,
+    sources               = batch.sources,
+    metadata              = batch.metadata
+  WHERE
+    external_service_type = batch.external_service_type
+    AND external_service_id = batch.external_service_id
+    AND external_id = batch.external_id
   RETURNING repo.*
 )
 SELECT
