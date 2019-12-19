@@ -72,6 +72,8 @@ type ExternalRepoSpec struct {
 	ServiceID string
 }
 
+// TODO call sites of IsSet can be updated since this will always be true.
+
 // IsSet returns true if all fields of the external repo spec are set.
 func (r ExternalRepoSpec) IsSet() bool {
 	return r.ID != "" && r.ServiceType != "" && r.ServiceID != ""
