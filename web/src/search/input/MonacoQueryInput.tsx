@@ -91,13 +91,21 @@ export const MonacoQueryInput: React.FunctionComponent<MonacoQueryInputProps> = 
     const editorWillMount = React.useCallback((monaco: typeof Monaco) => {
         addSouregraphSearchCodeIntelligence(monaco, queryUpdates, query => onChange({ query, cursorPosition: 0}))
     }, [ queryUpdates, onChange])
-    // Submit search on enter.
     const onEditorCreated = React.useCallback((editor: Monaco.editor.IStandaloneCodeEditor): void => {
+        // Submit on enter when not showing suggestions.
+        editor.addAction({
+            id: 'submitOnEnter',
+            label: 'submitOnEnter',
+            keybindings: [Monaco.KeyCode.Enter],
+            precondition: '!suggestWidgetVisible',
+            run: () => {
+                onSubmit()
+            }
+        })
+        // Prevent inserting newlines.
         editor.onKeyDown(e => {
             if (e.keyCode === Monaco.KeyCode.Enter) {
                 e.preventDefault()
-                console.log(e.target)
-                onSubmit()
             }
         })
     }, [onSubmit])

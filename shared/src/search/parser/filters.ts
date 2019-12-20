@@ -37,10 +37,12 @@ export const FILTERS: readonly FilterDefinition[] = [
     {
         aliases: ['repohasfile'],
         description: 'regex-pattern (include results from repos that contain a matching file)',
+        suggestions: 'File'
     },
     {
         aliases: ['-repohasfile'],
         description: 'regex-pattern (exclude results from repositories that contain a matching file)',
+        suggestions: 'File'
     },
     {
         aliases: ['repohascommitafter'],

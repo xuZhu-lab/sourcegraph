@@ -27,7 +27,14 @@ export function getProviders(
     searchQueries: Observable<string>,
     fetchSuggestions: (input: string) => Observable<SearchSuggestion[]>
 ): SearchFieldProviders {
-    const parsedQueries = searchQueries.pipe(map(parseSearchQuery), publishReplay(1), refCount())
+    const parsedQueries = searchQueries.pipe(
+        map(rawQuery => {
+            const parsed = parseSearchQuery(rawQuery)
+            return { rawQuery, parsed }
+        }),
+        publishReplay(1),
+        refCount()
+    )
     return {
         tokens: {
             getInitialState: () => PARSER_STATE,
@@ -47,7 +54,7 @@ export function getProviders(
                 parsedQueries
                     .pipe(
                         first(),
-                        map(parsed => (parsed.type === 'error' ? null : getHoverResult(parsed.token, position))),
+                        map(({parsed}) => (parsed.type === 'error' ? null : getHoverResult(parsed.token, position))),
                         takeUntil(fromEventPattern(handler => token.onCancellationRequested(handler)))
                     )
                     .toPromise(),
@@ -81,21 +88,21 @@ export function getProviders(
                 'x',
                 'y',
                 'z',
-                '-'
+                '-',
             ],
             provideCompletionItems: (_, position, context, token) =>
                 parsedQueries
                     .pipe(
                         first(),
-                        switchMap(parsed =>
+                        switchMap(({ rawQuery, parsed }) =>
                             parsed.type === 'error'
                                 ? of(null)
-                                : getCompletionItems(parsed.token, position, context, fetchSuggestions)
+                                : getCompletionItems(rawQuery, parsed.token, position, context, fetchSuggestions)
                         ),
                         takeUntil(fromEventPattern(handler => token.onCancellationRequested(handler)))
                     )
                     .toPromise(),
         },
-        diagnostics: parsedQueries.pipe(map(parsed => (parsed.type === 'success' ? getDiagnostics(parsed.token) : []))),
+        diagnostics: parsedQueries.pipe(map(({parsed}) => (parsed.type === 'success' ? getDiagnostics(parsed.token) : []))),
     }
 }

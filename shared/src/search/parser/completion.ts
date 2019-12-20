@@ -21,6 +21,7 @@ const FILTER_TYPE_COMPLETIONS: Omit<Monaco.languages.CompletionItem, 'range'>[] 
 )
 
 export async function getCompletionItems(
+    rawQuery: string,
     { members }: Pick<Sequence, 'members'>,
     { column }: Pick<Monaco.Position, 'column'>,
     context: Monaco.languages.CompletionContext,
@@ -62,7 +63,7 @@ export async function getCompletionItems(
         }
         if (filterDefinition.suggestions) {
             const suggestions = await fetchSuggestions(
-                filterValue.token.type === 'quoted' ? filterValue.token.quotedValue : filterValue.token.value
+                rawQuery
             ).toPromise()
             return {
                 suggestions: suggestions
@@ -75,6 +76,10 @@ export async function getCompletionItems(
                                 kind: Monaco.languages.CompletionItemKind.Text,
                                 insertText: `^${escapeRegExp(suggestion.name)}$ `,
                                 filterText: `${token.filterType.token.value}:${suggestion.name}`,
+                                detail:
+                                    suggestion.__typename === 'File'
+                                        ? `${suggestion.path} - ${suggestion.repository.name}`
+                                        : '',
                                 range: {
                                     startLineNumber: 0,
                                     endLineNumber: 0,
