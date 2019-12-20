@@ -24,7 +24,7 @@ interface Quoted {
     quotedValue: string
 }
 
-type Token = { type: 'whitespace' | 'eof' } | Word | Filter | Sequence | Quoted
+type Token = { type: 'whitespace' } | Word | Filter | Sequence | Quoted
 
 interface ParseError {
     type: 'error'
@@ -42,17 +42,6 @@ type ParserResult<T = Token> = ParseError | ParseSuccess<T>
 
 type Parser<T = Token> = (input: string, start: number) => ParserResult<T>
 
-const eof: Parser = (input, start) =>
-    input[start] === undefined
-        ? {
-              type: 'success',
-              token: {
-                  type: 'eof',
-              },
-              range: { start, end: start },
-          }
-        : { type: 'error', expected: 'EOF', at: start }
-
 const flatten = (members: Pick<ParseSuccess, 'range' | 'token'>[]): Sequence['members'] =>
     members.reduce(
         (merged: Sequence['members'], { range, token }) =>
@@ -60,36 +49,38 @@ const flatten = (members: Pick<ParseSuccess, 'range' | 'token'>[]): Sequence['me
         []
     )
 
-const chain = (...parsers: Parser[]): Parser<Sequence> => (input, start) => {
+const zeroOrMore = (parse: Parser, parseSeparator: Parser): Parser<Sequence> => (input, start) => {
     const members: Pick<ParseSuccess, 'range' | 'token'>[] = []
-    let firstParser = true
+    let adjustedStart = start
     let end = start
-    for (const parser of parsers) {
-        const result = parser(input, firstParser ? start : end + 1)
-        if (result.type === 'error') {
-            return result
-        }
-        const { token, range } = result
-        members.push({ token, range })
-        end = result.range.end
-        firstParser = false
+    // try to start with separator
+    const separatorResult = parseSeparator(input, start)
+    if (separatorResult.type === 'success') {
+        end = separatorResult.range.end
+        adjustedStart = separatorResult.range.end + 1
+        const {token, range} = separatorResult
+        members.push({ token, range})
     }
-    return {
-        type: 'success',
-        token: { type: 'sequence', members: flatten(members) },
-        range: { start, end },
-    }
-}
-
-const zeroOrMore = (parse: Parser): Parser<Sequence> => (input, start) => {
-    const members: Pick<ParseSuccess, 'range' | 'token'>[] = []
-    let end = start
-    let result = parse(input, start)
+    let result = parse(input, adjustedStart)
     while (result.type !== 'error') {
         const { token, range } = result
         members.push({ token, range })
         end = result.range.end
-        result = parse(input, end + 1)
+        adjustedStart = end + 1
+        if (input[adjustedStart] === undefined) {
+            // EOF
+            break
+        }
+        // Parse separator
+        const separatorResult = parseSeparator(input, adjustedStart)
+        if (separatorResult.type === 'error') {
+            return separatorResult
+        }
+        // Try to parse another token.
+        end = separatorResult.range.end
+        adjustedStart = end + 1
+        members.push({ token: separatorResult.token, range: separatorResult.range})
+        result = parse(input, adjustedStart)
     }
     return {
         type: 'success',
@@ -172,7 +163,7 @@ const filterKeyword = pattern(/-?[a-z]+(?=:)/)
 
 const filterDelimiter = character(':')
 
-const filterValue = oneOf(pattern(/[^:\s]+/), eof)
+const filterValue = pattern(/[^:\s]+/)
 
 const filter: Parser<Filter> = (input, start) => {
     const parsedKeyword = filterKeyword(input, start)
@@ -193,23 +184,11 @@ const filter: Parser<Filter> = (input, start) => {
         token: {
             type: 'filter',
             filterType: parsedKeyword,
-            filterValue:
-                parsedValue.token.type === 'eof'
-                    ? {
-                          token: {
-                              type: 'word' as const,
-                              value: '',
-                          },
-                          range: {
-                              start: parsedValue.range.start - 1,
-                              end: parsedValue.range.end - 1,
-                          },
-                      }
-                    : parsedValue as ParseSuccess<Word>,
+            filterValue: parsedValue,
         },
     }
 }
 
-const searchQuery = chain(zeroOrMore(oneOf(filter, quoted, literal, whitespace)), eof)
+const searchQuery = zeroOrMore(oneOf(filter, quoted, literal), whitespace)
 
 export const parseSearchQuery = (query: string): ParserResult<Sequence> => searchQuery(query, 0)

@@ -4,21 +4,11 @@ describe('parseSearchQuery()', () => {
     test('empty', () =>
         expect(parseSearchQuery('')).toMatchObject({
             range: {
-                end: 1,
+                end: 0,
                 start: 0,
             },
             token: {
-                members: [
-                    {
-                        range: {
-                            end: 1,
-                            start: 1,
-                        },
-                        token: {
-                            type: 'eof',
-                        },
-                    },
-                ],
+                members: [],
                 type: 'sequence',
             },
             type: 'success',
@@ -27,7 +17,7 @@ describe('parseSearchQuery()', () => {
     test('whitespace', () =>
         expect(parseSearchQuery('  ')).toMatchObject({
             range: {
-                end: 2,
+                end: 1,
                 start: 0,
             },
             token: {
@@ -41,15 +31,6 @@ describe('parseSearchQuery()', () => {
                             type: 'whitespace',
                         },
                     },
-                    {
-                        range: {
-                            end: 2,
-                            start: 2,
-                        },
-                        token: {
-                            type: 'eof',
-                        },
-                    },
                 ],
                 type: 'sequence',
             },
@@ -59,7 +40,7 @@ describe('parseSearchQuery()', () => {
     test('literal', () =>
         expect(parseSearchQuery('a')).toMatchObject({
             range: {
-                end: 1,
+                end: 0,
                 start: 0,
             },
             token: {
@@ -74,15 +55,6 @@ describe('parseSearchQuery()', () => {
                             value: 'a',
                         },
                     },
-                    {
-                        range: {
-                            end: 1,
-                            start: 1,
-                        },
-                        token: {
-                            type: 'eof',
-                        },
-                    },
                 ],
                 type: 'sequence',
             },
@@ -92,7 +64,7 @@ describe('parseSearchQuery()', () => {
     test('filter', () =>
         expect(parseSearchQuery('a:b')).toMatchObject({
             range: {
-                end: 3,
+                end: 2,
                 start: 0,
             },
             token: {
@@ -128,15 +100,6 @@ describe('parseSearchQuery()', () => {
                             type: 'filter',
                         },
                     },
-                    {
-                        range: {
-                            end: 3,
-                            start: 3,
-                        },
-                        token: {
-                            type: 'eof',
-                        },
-                    },
                 ],
                 type: 'sequence',
             },
@@ -146,7 +109,7 @@ describe('parseSearchQuery()', () => {
     test('negated filter', () =>
         expect(parseSearchQuery('-a:b')).toMatchObject({
             range: {
-                end: 4,
+                end: 3,
                 start: 0,
             },
             token: {
@@ -182,15 +145,6 @@ describe('parseSearchQuery()', () => {
                             type: 'filter',
                         },
                     },
-                    {
-                        range: {
-                            end: 4,
-                            start: 4,
-                        },
-                        token: {
-                            type: 'eof',
-                        },
-                    },
                 ],
                 type: 'sequence',
             },
@@ -200,7 +154,7 @@ describe('parseSearchQuery()', () => {
     test('quoted', () =>
         expect(parseSearchQuery('"a:b"')).toMatchObject({
             range: {
-                end: 5,
+                end: 4,
                 start: 0,
             },
             token: {
@@ -215,15 +169,6 @@ describe('parseSearchQuery()', () => {
                             type: 'quoted',
                         },
                     },
-                    {
-                        range: {
-                            end: 5,
-                            start: 5,
-                        },
-                        token: {
-                            type: 'eof',
-                        },
-                    },
                 ],
                 type: 'sequence',
             },
@@ -233,7 +178,7 @@ describe('parseSearchQuery()', () => {
     test('quoted (escaped quotes)', () =>
         expect(parseSearchQuery('"-\\"a\\":b"')).toMatchObject({
             range: {
-                end: 10,
+                end: 9,
                 start: 0,
             },
             token: {
@@ -248,15 +193,6 @@ describe('parseSearchQuery()', () => {
                             type: 'quoted',
                         },
                     },
-                    {
-                        range: {
-                            end: 10,
-                            start: 10,
-                        },
-                        token: {
-                            type: 'eof',
-                        },
-                    },
                 ],
                 type: 'sequence',
             },
@@ -266,7 +202,7 @@ describe('parseSearchQuery()', () => {
     test('complex query', () =>
         expect(parseSearchQuery('repo:^github\\.com/gorilla/mux$ lang:go -file:mux.go Router')).toMatchObject({
             range: {
-                end: 58,
+                end: 57,
                 start: 0,
             },
             token: {
@@ -399,15 +335,6 @@ describe('parseSearchQuery()', () => {
                         token: {
                             type: 'word',
                             value: 'Router',
-                        },
-                    },
-                    {
-                        range: {
-                            end: 58,
-                            start: 58,
-                        },
-                        token: {
-                            type: 'eof',
                         },
                     },
                 ],
