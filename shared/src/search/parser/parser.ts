@@ -3,15 +3,15 @@ interface CharacterRange {
     end: number
 }
 
-interface Word {
-    type: 'word'
+interface Literal {
+    type: 'literal'
     value: string
 }
 
 export interface Filter {
     type: 'filter'
-    filterType: Pick<ParseSuccess<Word>, 'range' | 'token'>
-    filterValue: Pick<ParseSuccess<Word>, 'range' | 'token'>
+    filterType: Pick<ParseSuccess<Literal>, 'range' | 'token'>
+    filterValue: Pick<ParseSuccess<Literal | Quoted>, 'range' | 'token'>
 }
 
 export interface Sequence {
@@ -24,7 +24,7 @@ interface Quoted {
     quotedValue: string
 }
 
-type Token = { type: 'whitespace' } | Word | Filter | Sequence | Quoted
+type Token = { type: 'whitespace' } | Literal | Filter | Sequence | Quoted
 
 interface ParseError {
     type: 'error'
@@ -58,8 +58,8 @@ const zeroOrMore = (parse: Parser, parseSeparator: Parser): Parser<Sequence> => 
     if (separatorResult.type === 'success') {
         end = separatorResult.range.end
         adjustedStart = separatorResult.range.end + 1
-        const {token, range} = separatorResult
-        members.push({ token, range})
+        const { token, range } = separatorResult
+        members.push({ token, range })
     }
     let result = parse(input, adjustedStart)
     while (result.type !== 'error') {
@@ -79,17 +79,20 @@ const zeroOrMore = (parse: Parser, parseSeparator: Parser): Parser<Sequence> => 
         // Try to parse another token.
         end = separatorResult.range.end
         adjustedStart = end + 1
-        members.push({ token: separatorResult.token, range: separatorResult.range})
+        members.push({ token: separatorResult.token, range: separatorResult.range })
+        if (input[adjustedStart] === undefined) {
+            return {
+                type: 'success',
+                range: { start, end },
+                token: { type: 'sequence', members: flatten(members) },
+            }
+        }
         result = parse(input, adjustedStart)
     }
-    return {
-        type: 'success',
-        range: { start, end },
-        token: { type: 'sequence', members: flatten(members) },
-    }
+    return result as ParseError
 }
 
-const oneOf = (...parsers: Parser[]): Parser => (input, start) => {
+const oneOf = <T>(...parsers: Parser<T>[]): Parser<T> => (input, start) => {
     const expected: string[] = []
     for (const parser of parsers) {
         const result = parser(input, start)
@@ -105,7 +108,7 @@ const oneOf = (...parsers: Parser[]): Parser => (input, start) => {
     }
 }
 
-const quoted: Parser = (input, start) => {
+const quoted: Parser<Quoted> = (input, start) => {
     if (input[start] !== '"') {
         return { type: 'error', expected: '"', at: start }
     }
@@ -123,18 +126,18 @@ const quoted: Parser = (input, start) => {
     }
 }
 
-const character = (c: string): Parser<Word> => (input, start) => {
+const character = (c: string): Parser<Literal> => (input, start) => {
     if (input[start] !== c) {
         return { type: 'error', expected: c, at: start }
     }
     return {
         type: 'success',
         range: { start, end: start },
-        token: { type: 'word', value: c },
+        token: { type: 'literal', value: c },
     }
 }
 
-const pattern = <T = Word>(p: RegExp, output?: T, expected?: string): Parser<T> => {
+const pattern = <T = Literal>(p: RegExp, output?: T, expected?: string): Parser<T> => {
     if (!p.source.startsWith('^')) {
         p = new RegExp(`^${p.source}`)
     }
@@ -150,7 +153,7 @@ const pattern = <T = Word>(p: RegExp, output?: T, expected?: string): Parser<T> 
         return {
             type: 'success',
             range: { start, end: start + match[0].length - 1 },
-            token: (output || { type: 'word', value: match[0] }) as T,
+            token: (output || { type: 'literal', value: match[0] }) as T,
         }
     }
 }
@@ -163,7 +166,7 @@ const filterKeyword = pattern(/-?[a-z]+(?=:)/)
 
 const filterDelimiter = character(':')
 
-const filterValue = pattern(/[^:\s]+/)
+const filterValue = oneOf<Quoted | Literal>(quoted, pattern(/[^:\s"']+/))
 
 const filter: Parser<Filter> = (input, start) => {
     const parsedKeyword = filterKeyword(input, start)
@@ -189,6 +192,6 @@ const filter: Parser<Filter> = (input, start) => {
     }
 }
 
-const searchQuery = zeroOrMore(oneOf(filter, quoted, literal), whitespace)
+const searchQuery = zeroOrMore(oneOf<Filter | Quoted | Literal>(filter, quoted, literal), whitespace)
 
 export const parseSearchQuery = (query: string): ParserResult<Sequence> => searchQuery(query, 0)

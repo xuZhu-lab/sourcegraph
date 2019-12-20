@@ -9,7 +9,7 @@ export function getMonacoTokens({ members }: Pick<Sequence, 'members'>): Monaco.
                 startIndex: range.start,
                 scopes: 'whitespace',
             })
-        } else if (token.type === 'quoted' || token.type === 'word') {
+        } else if (token.type === 'quoted' || token.type === 'literal') {
             tokens.push({
                 startIndex: range.start,
                 scopes: 'identifier'

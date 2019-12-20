@@ -51,7 +51,7 @@ describe('parseSearchQuery()', () => {
                             start: 0,
                         },
                         token: {
-                            type: 'word',
+                            type: 'literal',
                             value: 'a',
                         },
                     },
