@@ -20,8 +20,8 @@ export const getHoverResult = (
         range: {
             startLineNumber: 0,
             endLineNumber: 0,
-            startColumn: tokenAtColumn.range.start + 1,
-            endColumn: tokenAtColumn.range.end + 1,
+            startColumn: tokenAtColumn.range.start + 2,
+            endColumn: tokenAtColumn.range.end + 2,
         },
     }
 }

@@ -53,22 +53,20 @@ export function getProviders(
                     .toPromise(),
         },
         completion: {
-            provideCompletionItems: (_, position, context, token) => {
-                console.log('GIVE ME COMPLETIONS')
-                return null
-                // return parsedQueries
-                //     .pipe(
-                //         first(),
-                //         map(parsed => {
-                //             console.log('sup', { parsed })
-                //             return parsed.type === 'error'
-                //                 ? null
-                //                 : getCompletionItems(parsed.token, position, context, fetchSuggestions)
-                //         }),
-                //         takeUntil(fromEventPattern(handler => token.onCancellationRequested(handler)))
-                //     )
-                //     .toPromise()
-            },
+            triggerCharacters: ['-', 'r', 'e', 'p', 'o', 'f', 'i', 'l', 'e'],
+            provideCompletionItems: (_, position, context, token) => parsedQueries
+                    .pipe(
+                        first(),
+                        map(parsed => {
+                            console.log('sup', { parsed })
+                            return parsed.type === 'error'
+                                ? null
+                                : getCompletionItems(parsed.token, position, context, fetchSuggestions)
+                        }),
+                        takeUntil(fromEventPattern(handler => token.onCancellationRequested(handler)))
+                    )
+                    .toPromise()
+            ,
         },
         diagnostics: parsedQueries.pipe(map(parsed => (parsed.type === 'success' ? getDiagnostics(parsed.token) : []))),
     }

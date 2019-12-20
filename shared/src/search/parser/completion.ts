@@ -2,14 +2,14 @@ import * as Monaco from 'monaco-editor'
 import { FILTERS } from './filters'
 import { Omit } from 'utility-types'
 
-const FILTER_TYPE_COMPLETIONS: Omit<Monaco.languages.CompletionItem, 'range' | 'insertText'>[] = FILTERS.flatMap(
+const FILTER_TYPE_COMPLETIONS: Omit<Monaco.languages.CompletionItem, 'range'>[] = FILTERS.flatMap(
     ({ aliases, description }) =>
         aliases.map(
-            (label: string): Omit<Monaco.languages.CompletionItem, 'range' | 'insertText'> => ({
+            (label: string): Omit<Monaco.languages.CompletionItem, 'range'> => ({
                 label,
                 kind: Monaco.languages.CompletionItemKind.Keyword,
                 detail: description,
-                // insertText: label,
+                insertText: `${label}:`,
             })
         )
 )
