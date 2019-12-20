@@ -1,7 +1,7 @@
 import * as Monaco from 'monaco-editor'
-import { Observable, fromEventPattern } from 'rxjs'
+import { Observable, fromEventPattern, of } from 'rxjs'
 import { parseSearchQuery } from './parser'
-import { map, first, takeUntil, publishReplay, refCount } from 'rxjs/operators'
+import { map, first, takeUntil, publishReplay, refCount, switchMap } from 'rxjs/operators'
 import { getMonacoTokens } from './tokens'
 import { getDiagnostics } from './diagnostics'
 import { getCompletionItems } from './completion'
@@ -25,7 +25,7 @@ const PARSER_STATE: Monaco.languages.IState = {
 
 export function getProviders(
     searchQueries: Observable<string>,
-    fetchSuggestions: (input: string) => Observable<SearchSuggestion>
+    fetchSuggestions: (input: string) => Observable<SearchSuggestion[]>
 ): SearchFieldProviders {
     const parsedQueries = searchQueries.pipe(map(parseSearchQuery), publishReplay(1), refCount())
     return {
@@ -53,20 +53,48 @@ export function getProviders(
                     .toPromise(),
         },
         completion: {
-            triggerCharacters: ['-', 'r', 'e', 'p', 'o', 'f', 'i', 'l', 'e'],
-            provideCompletionItems: (_, position, context, token) => parsedQueries
+            triggerCharacters: [
+                ':',
+                'a',
+                'b',
+                'c',
+                'd',
+                'e',
+                'f',
+                'g',
+                'h',
+                'i',
+                'j',
+                'k',
+                'l',
+                'm',
+                'n',
+                'o',
+                'p',
+                'q',
+                'r',
+                's',
+                't',
+                'u',
+                'v',
+                'w',
+                'x',
+                'y',
+                'z',
+                '-'
+            ],
+            provideCompletionItems: (_, position, context, token) =>
+                parsedQueries
                     .pipe(
                         first(),
-                        map(parsed => {
-                            console.log('sup', { parsed })
-                            return parsed.type === 'error'
-                                ? null
+                        switchMap(parsed =>
+                            parsed.type === 'error'
+                                ? of(null)
                                 : getCompletionItems(parsed.token, position, context, fetchSuggestions)
-                        }),
+                        ),
                         takeUntil(fromEventPattern(handler => token.onCancellationRequested(handler)))
                     )
-                    .toPromise()
-            ,
+                    .toPromise(),
         },
         diagnostics: parsedQueries.pipe(map(parsed => (parsed.type === 'success' ? getDiagnostics(parsed.token) : []))),
     }

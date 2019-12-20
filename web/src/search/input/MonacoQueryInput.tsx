@@ -5,6 +5,7 @@ import { QueryState } from '../helpers'
 import { getProviders } from '../../../../shared/src/search/parser/providers'
 import { ReplaySubject, Subscription, Observable } from 'rxjs'
 import { fetchSuggestions } from '../backend'
+import { toArray, take } from 'rxjs/operators'
 
 export interface MonacoQueryInputProps {
     queryState: QueryState
@@ -43,7 +44,9 @@ function addSouregraphSearchCodeIntelligence(monaco: typeof Monaco, searchQuerie
 
     monaco.editor.setTheme('sourcegraph-dark')
 
-    const providers = getProviders(searchQueries, fetchSuggestions)
+    const providers = getProviders(searchQueries, (query: string) => fetchSuggestions(query).pipe(
+        toArray()
+    ))
 
     disposables.push(
         monaco.languages.setTokensProvider(SOURCEGRAPH_SEARCH, providers.tokens)
@@ -84,9 +87,20 @@ export const MonacoQueryInput: React.FunctionComponent<MonacoQueryInputProps> = 
 }) => {
     const queryUpdates = useMemo(() => new ReplaySubject<string>(1), [])
     useEffect(() => queryUpdates.next(queryState.query), [queryState.query, queryUpdates])
+    // Add code intelligence to the Monaco editor.
     const editorWillMount = React.useCallback((monaco: typeof Monaco) => {
         addSouregraphSearchCodeIntelligence(monaco, queryUpdates, query => onChange({ query, cursorPosition: 0}))
     }, [ queryUpdates, onChange])
+    // Submit search on enter.
+    const onEditorCreated = React.useCallback((editor: Monaco.editor.IStandaloneCodeEditor): void => {
+        editor.onKeyDown(e => {
+            if (e.keyCode === Monaco.KeyCode.Enter) {
+                e.preventDefault()
+                console.log(e.target)
+                onSubmit()
+            }
+        })
+    }, [onSubmit])
     const options: Monaco.editor.IEditorOptions = {
         readOnly: false,
         lineNumbers: 'off',
@@ -116,6 +130,7 @@ export const MonacoQueryInput: React.FunctionComponent<MonacoQueryInputProps> = 
             height={35}
             theme='sourcegraph-dark'
             editorWillMount={editorWillMount}
+            onEditorCreated={onEditorCreated}
             options={options}
             className="flex-grow-1"
         ></MonacoEditor>

@@ -19,10 +19,12 @@ export function getMonacoTokens({ members }: Pick<Sequence, 'members'>): Monaco.
                 startIndex: token.filterType.range.start,
                 scopes: 'keyword',
             })
-            tokens.push({
-                startIndex: token.filterValue.range.start,
-                scopes: 'identifier'
-            })
+            if (token.filterValue) {
+                tokens.push({
+                    startIndex: token.filterValue.range.start,
+                    scopes: 'identifier'
+                })
+            }
         }
     }
     return tokens

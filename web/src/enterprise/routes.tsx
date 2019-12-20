@@ -35,7 +35,7 @@ export const enterpriseRoutes: readonly LayoutRouteProps<{}>[] = [
                 return false
             }
             const settings: Settings = settingsCascade.final
-            return Boolean(settings.experimentalFeatures?.searchStats)
+            return Boolean(settings.experimentalFeatures && settings.experimentalFeatures.searchStats)
         },
     },
     ...routes,

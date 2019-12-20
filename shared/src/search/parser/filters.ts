@@ -1,6 +1,7 @@
 import { SearchSuggestion } from '../../graphql/schema'
+import { Filter } from './parser'
 
-interface FilterDefinition {
+export interface FilterDefinition {
     aliases: string[]
     description: string
     discreteValues?: string[]
@@ -22,12 +23,12 @@ export const FILTERS: readonly FilterDefinition[] = [
     {
         aliases: ['f', 'file'],
         description: 'Include only results from files matching the given regex pattern.',
-        suggestions: 'Repository',
+        suggestions: 'File',
     },
     {
         aliases: ['-f', '-file'],
         description: 'Exclude results from files matching the given regex pattern.',
-        suggestions: 'Repository',
+        suggestions: 'File',
     },
     {
         aliases: ['repogroup'],
@@ -68,6 +69,7 @@ export const FILTERS: readonly FilterDefinition[] = [
     },
     {
         aliases: ['fork'],
+        discreteValues: ['yes', 'no', 'only'],
         description: 'Fork',
     },
     {
@@ -84,15 +86,23 @@ export const FILTERS: readonly FilterDefinition[] = [
     },
 ]
 
+export const getFilterDefinition = (filterType: string): FilterDefinition | undefined =>
+    FILTERS.find(({ aliases }) => aliases.some(a => a === filterType))
+
 export const validateFilter = (
     filterType: string,
-    filterValue: string
+    filterValue: Filter['filterValue']
 ): { valid: true } | { valid: false; reason: string } => {
-    const definition = FILTERS.find(({ aliases }) => aliases.some(a => a === filterType))
+    const definition = getFilterDefinition(filterType)
     if (!definition) {
         return { valid: false, reason: 'Invalid filter type' }
     }
-    if (definition.discreteValues && !definition.discreteValues.includes(filterValue)) {
+    if (
+        definition.discreteValues &&
+        (!filterValue ||
+            filterValue.token.type !== 'literal' ||
+            !definition.discreteValues.includes(filterValue.token.value))
+    ) {
         return {
             valid: false,
             reason: `Invalid filter value, expected one of: ${definition.discreteValues.join(', ')}`,

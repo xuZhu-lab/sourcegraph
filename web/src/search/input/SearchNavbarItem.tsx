@@ -1,11 +1,12 @@
 import * as H from 'history'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { ActivationProps } from '../../../../shared/src/components/activation/Activation'
 import { Form } from '../../components/Form'
 import { submitSearch, QueryState } from '../helpers'
 import { SearchButton } from './SearchButton'
 import { PatternTypeProps } from '..'
 import { MonacoQueryInput } from './MonacoQueryInput'
+import { Subject } from 'rxjs'
 
 interface Props extends ActivationProps, PatternTypeProps {
     location: H.Location
@@ -17,32 +18,22 @@ interface Props extends ActivationProps, PatternTypeProps {
 /**
  * The search item in the navbar
  */
-export const SearchNavbarItem: React.FunctionComponent<Props> = ({
-    navbarSearchState,
-    onChange,
-    activation,
-    location,
-    history,
-    patternType,
-    setPatternType,
-}) => {
-    // Only autofocus the query input on search result pages (otherwise we
-    // capture down-arrow keypresses that the user probably intends to scroll down
-    // in the page).
-    const autoFocus = location.pathname === '/search'
+export class SearchNavbarItem extends React.PureComponent<Props> {
 
-    const onSubmit = (): void => {
+    private onFormSubmit = (e: React.FormEvent): void => {e.preventDefault()}
+
+    private onSubmit = (): void => {
+        const { history, navbarSearchState, patternType, activation } = this.props
         submitSearch(history, navbarSearchState.query, 'nav', patternType, activation)
     }
 
-    const onFormSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
+    public render(): React.ReactNode {
+        return (
+            <Form className="search search--navbar-item d-flex align-items-start flex-grow-1" onSubmit={this.onFormSubmit}>
+                <MonacoQueryInput {...this.props} queryState={this.props.navbarSearchState} onSubmit={this.onSubmit}></MonacoQueryInput>
+                <SearchButton />
+            </Form>
+        )
     }
 
-    return (
-        <Form className="search search--navbar-item d-flex align-items-start flex-grow-1" onSubmit={onFormSubmit}>
-            <MonacoQueryInput onChange={onChange} queryState={navbarSearchState} onSubmit={onSubmit}></MonacoQueryInput>
-            <SearchButton />
-        </Form>
-    )
 }

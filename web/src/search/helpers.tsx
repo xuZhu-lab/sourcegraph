@@ -22,7 +22,7 @@ export function submitSearch(
     filtersQuery?: FiltersToTypeAndValue
 ): void {
     const searchQueryParam = buildSearchURLQuery(navbarQuery, patternType, filtersQuery)
-
+    console.log(searchQueryParam)
     // Go to search results page
     const path = '/search?' + searchQueryParam
     eventLogger.log('SearchSubmitted', {

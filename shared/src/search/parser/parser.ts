@@ -3,7 +3,7 @@ interface CharacterRange {
     end: number
 }
 
-interface Literal {
+export interface Literal {
     type: 'literal'
     value: string
 }
@@ -11,7 +11,7 @@ interface Literal {
 export interface Filter {
     type: 'filter'
     filterType: Pick<ParseSuccess<Literal>, 'range' | 'token'>
-    filterValue: Pick<ParseSuccess<Literal | Quoted>, 'range' | 'token'>
+    filterValue: Pick<ParseSuccess<Literal | Quoted>, 'range' | 'token'> | undefined
 }
 
 export interface Sequence {
@@ -19,12 +19,12 @@ export interface Sequence {
     members: Pick<ParseSuccess<Exclude<Token, Sequence>>, 'range' | 'token'>[]
 }
 
-interface Quoted {
+export interface Quoted {
     type: 'quoted'
     quotedValue: string
 }
 
-type Token = { type: 'whitespace' } | Literal | Filter | Sequence | Quoted
+export type Token = { type: 'whitespace' } | Literal | Filter | Sequence | Quoted
 
 interface ParseError {
     type: 'error'
@@ -32,7 +32,7 @@ interface ParseError {
     at: number
 }
 
-interface ParseSuccess<T = Token> {
+export interface ParseSuccess<T = Token> {
     type: 'success'
     token: T
     range: CharacterRange
@@ -174,13 +174,16 @@ const filter: Parser<Filter> = (input, start) => {
     if (parsedDelimiter.type === 'error') {
         return parsedDelimiter
     }
-    const parsedValue = filterValue(input, parsedDelimiter.range.end + 1)
-    if (parsedValue.type === 'error') {
+    const parsedValue =
+        input[parsedDelimiter.range.end + 1] === undefined
+            ? undefined
+            : filterValue(input, parsedDelimiter.range.end + 1)
+    if (parsedValue && parsedValue.type === 'error') {
         return parsedValue
     }
     return {
         type: 'success',
-        range: { start, end: parsedValue.range.end },
+        range: { start, end: parsedValue ? parsedValue.range.end : parsedDelimiter.range.end },
         token: {
             type: 'filter',
             filterType: parsedKeyword,

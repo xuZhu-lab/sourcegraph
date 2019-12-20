@@ -7,7 +7,7 @@ export function getDiagnostics({ members }: Pick<Sequence, 'members'>): Monaco.e
     for (const { token, range } of members) {
         if (token.type === 'filter') {
             const { filterType, filterValue } = token
-            const validationResult = validateFilter(filterType.token.value, filterValue.token.value)
+            const validationResult = validateFilter(filterType.token.value, filterValue)
             if (validationResult.valid) {
                 continue
             }
@@ -19,7 +19,7 @@ export function getDiagnostics({ members }: Pick<Sequence, 'members'>): Monaco.e
                 startColumn: filterType.range.start + 1,
                 endColumn: filterType.range.end + 1,
             })
-        } else if (token.type === 'word') {
+        } else if (token.type === 'literal') {
             if (token.value.includes(':')) {
                 diagnostics.push({
                     severity: Monaco.MarkerSeverity.Warning,
@@ -27,7 +27,7 @@ export function getDiagnostics({ members }: Pick<Sequence, 'members'>): Monaco.e
                     startLineNumber: 0,
                     endLineNumber: 0,
                     startColumn: range.start + 1,
-                    endColumn: range.end + 1,
+                    endColumn: range.end + 2,
                 })
             }
         }
