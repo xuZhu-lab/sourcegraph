@@ -81,7 +81,7 @@ describe('parseSearchQuery()', () => {
                                     start: 0,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: 'a',
                                 },
                                 type: 'success',
@@ -92,7 +92,7 @@ describe('parseSearchQuery()', () => {
                                     start: 2,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: 'b',
                                 },
                                 type: 'success',
@@ -126,7 +126,7 @@ describe('parseSearchQuery()', () => {
                                     start: 0,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: '-a',
                                 },
                                 type: 'success',
@@ -137,7 +137,7 @@ describe('parseSearchQuery()', () => {
                                     start: 3,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: 'b',
                                 },
                                 type: 'success',
@@ -219,7 +219,7 @@ describe('parseSearchQuery()', () => {
                                     start: 0,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: 'repo',
                                 },
                                 type: 'success',
@@ -230,7 +230,7 @@ describe('parseSearchQuery()', () => {
                                     start: 5,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: '^github\\.com/gorilla/mux$',
                                 },
                                 type: 'success',
@@ -259,7 +259,7 @@ describe('parseSearchQuery()', () => {
                                     start: 31,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: 'lang',
                                 },
                                 type: 'success',
@@ -270,7 +270,7 @@ describe('parseSearchQuery()', () => {
                                     start: 36,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: 'go',
                                 },
                                 type: 'success',
@@ -299,7 +299,7 @@ describe('parseSearchQuery()', () => {
                                     start: 39,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: '-file',
                                 },
                                 type: 'success',
@@ -310,7 +310,7 @@ describe('parseSearchQuery()', () => {
                                     start: 45,
                                 },
                                 token: {
-                                    type: 'word',
+                                    type: 'literal',
                                     value: 'mux.go',
                                 },
                                 type: 'success',
@@ -333,7 +333,7 @@ describe('parseSearchQuery()', () => {
                             start: 52,
                         },
                         token: {
-                            type: 'word',
+                            type: 'literal',
                             value: 'Router',
                         },
                     },
