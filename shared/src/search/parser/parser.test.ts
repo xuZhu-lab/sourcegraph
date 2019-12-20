@@ -151,6 +151,52 @@ describe('parseSearchQuery()', () => {
             type: 'success',
         }))
 
+    test('filter with quoted value', () => {
+        expect(parseSearchQuery('a:"b"')).toMatchObject({
+            range: {
+                end: 4,
+                start: 0,
+            },
+            token: {
+                members: [
+                    {
+                        range: {
+                            end: 4,
+                            start: 0,
+                        },
+                        token: {
+                            filterType: {
+                                range: {
+                                    end: 0,
+                                    start: 0,
+                                },
+                                token: {
+                                    type: 'literal',
+                                    value: 'a',
+                                },
+                                type: 'success',
+                            },
+                            filterValue: {
+                                range: {
+                                    end: 4,
+                                    start: 2,
+                                },
+                                token: {
+                                    quotedValue: 'b',
+                                    type: 'quoted',
+                                },
+                                type: 'success',
+                            },
+                            type: 'filter',
+                        },
+                    },
+                ],
+                type: 'sequence',
+            },
+            type: 'success',
+        })
+    })
+
     test('quoted', () =>
         expect(parseSearchQuery('"a:b"')).toMatchObject({
             range: {
