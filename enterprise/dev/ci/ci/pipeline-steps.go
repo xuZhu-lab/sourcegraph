@@ -266,10 +266,10 @@ func addDockerImages(c Config, final bool) func(*bk.Pipeline) {
 // tags once the e2e tests pass.
 func addCanidateDockerImage(c Config, app string) func(*bk.Pipeline) {
 	return func(pipeline *bk.Pipeline) {
-		if app == "server" {
-			// The candiate server image is built by the e2e pipeline.
-			return
-		}
+		// if app == "server" {
+		// 	// The candiate server image is built by the e2e pipeline.
+		// 	return
+		// }
 
 		baseImage := "sourcegraph/" + app
 
