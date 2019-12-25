@@ -725,7 +725,7 @@ export const CampaignDetails: React.FunctionComponent<Props> = ({
                     <TabbedSectionsWithLocalStorageViewStatePersistence
                         storageKey="campaignTab"
                         className="mt-3"
-                        tabs={[
+                        sections={[
                             {
                                 id: 'diff',
                                 label: (
@@ -749,7 +749,7 @@ export const CampaignDetails: React.FunctionComponent<Props> = ({
                                 ),
                             },
                         ]}
-                        tabClassName="tab-bar__tab--h5like"
+                        navbarItemClassName="tabbed-sections-navbar__tab--h5like"
                     >
                         <div className="list-group mt-3" key="changesets">
                             {campaign && campaign.__typename === 'Campaign' && (
