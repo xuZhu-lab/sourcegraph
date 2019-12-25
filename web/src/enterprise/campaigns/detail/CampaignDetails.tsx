@@ -38,7 +38,7 @@ import { Markdown } from '../../../../../shared/src/components/Markdown'
 import { Link } from '../../../../../shared/src/components/Link'
 import { switchMap, tap, catchError, takeWhile, concatMap, repeatWhen, delay } from 'rxjs/operators'
 import { ThemeProps } from '../../../../../shared/src/theme'
-import { TabsWithLocalStorageViewStatePersistence } from '../../../../../shared/src/components/Tabs'
+import { TabbedSectionsWithLocalStorageViewStatePersistence } from '../../../../../shared/src/components/sections/tabbed/TabbedSections'
 import { isDefined } from '../../../../../shared/src/util/types'
 import { FileDiffTab } from './FileDiffTab'
 import combyJsonSchema from '../../../../../schema/campaign-types/comby.schema.json'
@@ -722,7 +722,7 @@ export const CampaignDetails: React.FunctionComponent<Props> = ({
             {/* is already created or a preview is available */}
             {campaign && (
                 <>
-                    <TabsWithLocalStorageViewStatePersistence
+                    <TabbedSectionsWithLocalStorageViewStatePersistence
                         storageKey="campaignTab"
                         className="mt-3"
                         tabs={[
@@ -793,7 +793,7 @@ export const CampaignDetails: React.FunctionComponent<Props> = ({
                                 ></FileDiffTab>
                             )}
                         </div>
-                    </TabsWithLocalStorageViewStatePersistence>
+                    </TabbedSectionsWithLocalStorageViewStatePersistence>
                 </>
             )}
         </>
