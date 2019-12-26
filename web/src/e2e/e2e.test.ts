@@ -914,7 +914,7 @@ describe('e2e test suite', () => {
                 await driver.page.waitForSelector('#repo-rev-popover', { visible: true })
                 await driver.page.click('#repo-rev-popover')
                 // Click "Tags" tab
-                await driver.page.click('.revisions-popover .tabbed-sections-navbar__tab:nth-child(2)')
+                await driver.page.click('.revisions-popover .tabbed-sections__navbar-tab:nth-child(2)')
                 await driver.page.waitForSelector('a.git-ref-node[href*="0.1.0"]', { visible: true })
                 await driver.page.click('a.git-ref-node[href*="0.1.0"]')
                 await driver.assertWindowLocation('/github.com/sourcegraph/checkup@v0.1.0/-/blob/s3.go')

@@ -749,7 +749,7 @@ export const CampaignDetails: React.FunctionComponent<Props> = ({
                                 ),
                             },
                         ]}
-                        navbarItemClassName="tabbed-sections-navbar__tab--h5like"
+                        navbarItemClassName="tabbed-sections__navbar-tab--h5like"
                     >
                         <div className="list-group mt-3" key="changesets">
                             {campaign && campaign.__typename === 'Campaign' && (
