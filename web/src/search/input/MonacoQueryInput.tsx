@@ -121,10 +121,11 @@ export const MonacoQueryInput: React.FunctionComponent<MonacoQueryInputProps> = 
             vertical: 'hidden',
             horizontal: 'hidden',
         },
-        // glyphMargin: false,
-        // lineDecorationsWidth: 0,
+        glyphMargin: false,
+        lineDecorationsWidth: 0,
         lineNumbersMinChars: 0,
-        // folding: false,
+        overviewRulerBorder: false,
+        folding: false,
         rulers: [],
         overviewRulerLanes: 0,
         wordBasedSuggestions: false,
@@ -140,7 +141,7 @@ export const MonacoQueryInput: React.FunctionComponent<MonacoQueryInputProps> = 
             editorWillMount={editorWillMount}
             onEditorCreated={onEditorCreated}
             options={options}
-            className="flex-grow-1"
+            className="flex-grow-1 flex-shrink-1"
         ></MonacoEditor>
     )
 }

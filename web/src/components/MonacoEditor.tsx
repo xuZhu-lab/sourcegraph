@@ -40,6 +40,7 @@ export class MonacoEditor extends React.PureComponent<Props, State> {
             return
         }
 
+        
         this.props.editorWillMount(monaco)
         const editor = monaco.editor.create(e, {
             value: this.props.value,
@@ -51,6 +52,11 @@ export class MonacoEditor extends React.PureComponent<Props, State> {
             this.props.onEditorCreated(editor)
         }
         this.editor = editor
+        const obs = new ResizeObserver(() => {
+            this.editor?.layout()
+        })
+        obs.observe(e)
+        obs.observe(document.body)
     }
 
     public componentDidUpdate(prevProps: Props): void {

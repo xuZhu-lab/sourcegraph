@@ -15,7 +15,7 @@ import { limitString } from '../../util'
 import { submitSearch, QueryState } from '../helpers'
 import { QuickLinks } from '../QuickLinks'
 import { QueryBuilder } from './QueryBuilder'
-import { QueryInput } from './QueryInput'
+import { MonacoQueryInput } from './MonacoQueryInput'
 import { SearchButton } from './SearchButton'
 import { ISearchScope, SearchFilterChips } from './SearchFilterChips'
 import { InteractiveModeInput } from './interactive/InteractiveModeInput'
@@ -104,7 +104,7 @@ export class SearchPage extends React.Component<Props, State> {
                             />
                         ) : (
                             <>
-                                <Form className="search flex-grow-1" onSubmit={this.onSubmit}>
+                                <Form className="search flex-grow-1" onSubmit={this.onFormSubmit}>
                                     <div className="search-page__input-container">
                                         {this.props.splitSearchModes && (
                                             <SearchModeToggle
@@ -112,15 +112,10 @@ export class SearchPage extends React.Component<Props, State> {
                                                 interactiveSearchMode={this.props.interactiveSearchMode}
                                             />
                                         )}
-                                        <QueryInput
-                                            {...this.props}
-                                            value={this.state.userQueryState}
+                                        <MonacoQueryInput
+                                            queryState={this.state.userQueryState}
                                             onChange={this.onUserQueryChange}
-                                            autoFocus="cursor-at-end"
-                                            hasGlobalQueryBehavior={true}
-                                            patternType={this.props.patternType}
-                                            setPatternType={this.props.setPatternType}
-                                            withSearchModeToggle={this.props.splitSearchModes}
+                                            onSubmit={this.onSubmit}
                                         />
                                         <SearchButton />
                                     </div>
@@ -193,7 +188,11 @@ export class SearchPage extends React.Component<Props, State> {
         this.setState({ builderQuery })
     }
 
-    private onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    private onSubmit = (): void => {
+        const query = [this.state.builderQuery, this.state.userQueryState.query].filter(s => !!s).join(' ')
+        submitSearch(this.props.history, query, 'home', this.props.patternType, this.props.activation)
+    }
+    private onFormSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault()
         const query = [this.state.builderQuery, this.state.userQueryState.query].filter(s => !!s).join(' ')
         submitSearch(this.props.history, query, 'home', this.props.patternType, this.props.activation)
